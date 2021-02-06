@@ -41,5 +41,11 @@ namespace DevEvents.API.Controllers
         {
             return NoContent();
         }
+
+        [HttpPost("{idEvento}/usuarios/{idUsuario}/inscrever")]
+        public IActionResult Inscrever(int idEvento, int idUsuario, [FromBody] Inscricao inscricao)
+        {
+            return NoContent();
+        }
     }
 }

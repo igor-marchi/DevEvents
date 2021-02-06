@@ -16,6 +16,8 @@ namespace DevEvents.API.Entidades
         public DateTime DataCadastro { get; set; }
 
         public int IdCategoria { get; set; }
+        public Categoria Categoria { get; set; }
         public int IdUsuario { get; set; }
+        public Usuario Usuario { get; set; }
     }
 }
