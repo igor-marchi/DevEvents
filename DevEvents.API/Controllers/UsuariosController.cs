@@ -1,4 +1,5 @@
 ﻿using DevEvents.API.Entidades;
+using DevEvents.API.Persistencia;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,28 +11,40 @@ namespace DevEvents.API.Controllers
     [Route("api/[controller]")]
     public class UsuariosController : ControllerBase
     {
+        private readonly DevEventsDbContext _dbContext;
+
+        public UsuariosController(DevEventsDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         [HttpGet]
         public IActionResult ObterTodos()
         {
-            var uauarios = new List<Usuario>
-            {
-                new Usuario { NomeCompleto = "Claudio da Massa", DataNascimento = new DateTime(1990, 10, 21)},
-                new Usuario { NomeCompleto = "Cleiton Raxta", DataNascimento = new DateTime(1990, 5, 11)},
-                new Usuario { NomeCompleto = "Dreisson Rodrigues", DataNascimento = new DateTime(1980, 11, 30)},
-            };
+            var uauarios = _dbContext.Usuarios.ToList();
             return Ok(uauarios);
         }
 
         [HttpGet("{id}")]
         public IActionResult ObterUsuario(int id)
         {
-            return Ok();
+            var usuario = _dbContext.Usuarios.SingleOrDefault(e => e.Id == id);
+            if (usuario == null)
+                return NoContent();
+
+            return Ok(usuario);
         }
 
         [HttpPost]
         public IActionResult Cadastar([FromBody] Usuario usuario)
         {
-            return Ok();
+            if (usuario == null)
+                throw new InvalidOperationException("Objeto usuario nulo");
+
+            _dbContext.Usuarios.Add(usuario);
+            _dbContext.SaveChanges();
+
+            return NoContent();
         }
 
         [HttpPut("{id}")]
