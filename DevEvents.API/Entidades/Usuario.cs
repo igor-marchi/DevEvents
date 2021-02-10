@@ -13,5 +13,7 @@ namespace DevEvents.API.Entidades
         public bool Ativo { get; set; }
         public DateTime DataNascimento { get; set; }
         public DateTime DataCadastro { get; set; }
+
+        public List<Inscricao> Inscricoes { get; set; }
     }
 }
