@@ -2,7 +2,6 @@
 using DevEvents.API.Persistencia;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace DevEvents.API.Controllers
@@ -20,8 +19,17 @@ namespace DevEvents.API.Controllers
         [HttpGet]
         public IActionResult ObterTodas()
         {
-            var categorais = _dbContext.Categorias.ToList();
-            return Ok(categorais);
+            //EF Core
+            var categorias = _dbContext.Categorias.ToList();
+
+            //Dapper
+            //var connectionString = _dbContext.Database.GetDbConnection().ConnectionString;
+
+            //using SqlConnection sqlConnection = new SqlConnection(connectionString);
+            //var script = "SELECT * FROM Categorias";
+            //var categorias = sqlConnection.Query<Categoria>(script);
+
+            return Ok(categorias);
         }
 
         [HttpPost]

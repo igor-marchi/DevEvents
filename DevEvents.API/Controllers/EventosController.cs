@@ -1,10 +1,13 @@
-﻿using DevEvents.API.Entidades;
+﻿using Dapper;
+using DevEvents.API.Entidades;
 using DevEvents.API.Persistencia;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 
 namespace DevEvents.API.Controllers
 {
@@ -32,6 +35,7 @@ namespace DevEvents.API.Controllers
                 Eventos
                 .Include(e => e.Categoria)
                 .Include(e => e.Usuario)
+                .Include(e => e.Inscricoes)
                 .SingleOrDefault(e => e.Id == id);
 
             if (evento == null)
@@ -50,20 +54,64 @@ namespace DevEvents.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Atualizar(int id)
+        public IActionResult Atualizar(int id, [FromBody] Evento evento)
         {
+            var eventoBanco = _dbContext.Eventos.SingleOrDefault(e => e.Id == id);
+
+            eventoBanco.Ativo = evento.Ativo;
+            eventoBanco.Descricao = evento.Descricao;
+
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Deletar(int id)
         {
+            //EF Core
+            var evento = _dbContext.Eventos.SingleOrDefault(e => e.Id == id);
+            if (evento == null)
+                return NotFound();
+
+            evento.Ativo = false;
+            _dbContext.SaveChanges();
+
+            //Dapper
+            //var connectioString = _dbContext.Database.GetDbConnection().ConnectionString;
+
+            //using (var transactionScope = new TransactionScope())
+            //{
+            //    using (var sqlConnection = new SqlConnection(connectioString))
+            //    {
+            //        var script = "UPDATE Eventos SET Ativo = 0 WHERE Id = @id";
+
+            //        sqlConnection.Execute(script, new { id });
+            //    }
+
+            //    transactionScope.Complete();
+            //}
+
             return NoContent();
         }
 
         [HttpPost("{idEvento}/usuarios/{idUsuario}/inscrever")]
         public IActionResult Inscrever(int idEvento, int idUsuario, [FromBody] Inscricao inscricao)
         {
+            if (inscricao == null)
+                throw new InvalidOperationException("Objeto Inscricao está vazio");
+
+            var evento = _dbContext.Eventos.SingleOrDefault(e => e.Id == idEvento);
+            if (evento == null)
+                return BadRequest();
+
+            var usuario = _dbContext.Usuarios.SingleOrDefault(e => e.Id == idUsuario);
+            if (usuario == null)
+                return BadRequest();
+
+            _dbContext.Inscricoes.Add(inscricao);
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
 
