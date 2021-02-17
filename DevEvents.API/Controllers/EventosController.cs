@@ -1,10 +1,13 @@
-﻿using DevEvents.API.Entidades;
+﻿using Dapper;
+using DevEvents.API.Entidades;
 using DevEvents.API.Persistencia;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 
 namespace DevEvents.API.Controllers
 {
@@ -66,12 +69,29 @@ namespace DevEvents.API.Controllers
         [HttpDelete("{id}")]
         public IActionResult Deletar(int id)
         {
+            //EF Core
             var evento = _dbContext.Eventos.SingleOrDefault(e => e.Id == id);
             if (evento == null)
                 return NotFound();
 
             evento.Ativo = false;
             _dbContext.SaveChanges();
+
+            //Dapper
+            //var connectioString = _dbContext.Database.GetDbConnection().ConnectionString;
+
+            //using (var transactionScope = new TransactionScope())
+            //{
+            //    using (var sqlConnection = new SqlConnection(connectioString))
+            //    {
+            //        var script = "UPDATE Eventos SET Ativo = 0 WHERE Id = @id";
+
+            //        sqlConnection.Execute(script, new { id });
+            //    }
+
+            //    transactionScope.Complete();
+            //}
+
             return NoContent();
         }
 
@@ -83,6 +103,10 @@ namespace DevEvents.API.Controllers
 
             var evento = _dbContext.Eventos.SingleOrDefault(e => e.Id == idEvento);
             if (evento == null)
+                return BadRequest();
+
+            var usuario = _dbContext.Usuarios.SingleOrDefault(e => e.Id == idUsuario);
+            if (usuario == null)
                 return BadRequest();
 
             _dbContext.Inscricoes.Add(inscricao);
